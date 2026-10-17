@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi Siswa Online</title>
+    <title>Sistem Absensi Siswa Online - SMK</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -55,7 +55,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="#">
-                <i class="fa-solid fa-user-check"></i> Absensi Siswa Online
+                <i class="fa-solid fa-user-check"></i> Absensi Siswa Online SMK
             </a>
             <span class="navbar-text text-white-50">
                 Sistem Kehadiran Digital
@@ -69,13 +69,24 @@
         <!-- Controls Panel -->
         <div class="attendance-card p-4 mb-4">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Pilih Kelas</label>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Pilih Jurusan / Kelas</label>
                     <select class="form-select" id="classSelect" onchange="loadStudents()">
-                        <option value="10-A">Kelas X - A</option>
-                        <option value="10-B">Kelas X - B</option>
-                        <option value="11-A">Kelas XI - A</option>
-                        <option value="12-A">Kelas XII - A</option>
+                        <optgroup label="Rekayasa & Teknologi">
+                            <option value="RPL">RPL (Rekayasa Perangkat Lunak)</option>
+                            <option value="DKV">DKV (Desain Komunikasi Visual)</option>
+                            <option value="TP">TP (Teknik Pemesinan)</option>
+                            <option value="TKR">TKR (Teknik Kendaraan Ringan)</option>
+                            <option value="TSM">TSM (Teknik Sepeda Motor)</option>
+                        </optgroup>
+                        <optgroup label="Bisnis, Pariwisata & Kerajinan">
+                            <option value="AKUNTANSI">Akuntansi (AKL)</option>
+                            <option value="BD">BD (Bisnis Digital)</option>
+                            <option value="LOGISTIK">Logistik</option>
+                            <option value="HOTEL">Perhotelan</option>
+                            <option value="DPB">DPB (Desain & Produksi Busana)</option>
+                            <option value="APHP">APHP (Agribisnis Pengolahan Hasil Pertanian)</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -86,9 +97,9 @@
                     <label class="form-label fw-bold">Cari Nama Siswa</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="Cari nama..." onkeyup="filterStudents()">
                 </div>
-                <div class="col-md-3 d-flex gap-2">
+                <div class="col-md-2 d-flex gap-2">
                     <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                        <i class="fa-solid fa-user-plus me-1"></i> Tambah Siswa
+                        <i class="fa-solid fa-user-plus me-1"></i> Tambah
                     </button>
                 </div>
             </div>
@@ -173,19 +184,26 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold">NISN</label>
-                        <input type="text" class="form-control" id="newNisn" placeholder="Contoh: 12345678">
+                        <input type="text" class="form-control" id="newNisn" placeholder="Contoh: 0051234501">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nama Lengkap</label>
                         <input type="text" class="form-control" id="newName" placeholder="Contoh: Ahmad Rizky">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Kelas</label>
+                        <label class="form-label fw-bold">Jurusan</label>
                         <select class="form-select" id="newClass">
-                            <option value="10-A">Kelas X - A</option>
-                            <option value="10-B">Kelas X - B</option>
-                            <option value="11-A">Kelas XI - A</option>
-                            <option value="12-A">Kelas XII - A</option>
+                            <option value="RPL">RPL (Rekayasa Perangkat Lunak)</option>
+                            <option value="DPB">DPB (Desain & Produksi Busana)</option>
+                            <option value="TP">TP (Teknik Pemesinan)</option>
+                            <option value="DKV">DKV (Desain Komunikasi Visual)</option>
+                            <option value="TSM">TSM (Teknik Sepeda Motor)</option>
+                            <option value="LOGISTIK">Logistik</option>
+                            <option value="BD">BD (Bisnis Digital)</option>
+                            <option value="AKUNTANSI">Akuntansi</option>
+                            <option value="HOTEL">Perhotelan</option>
+                            <option value="APHP">APHP (Agribisnis Pengolahan Hasil Pertanian)</option>
+                            <option value="TKR">TKR (Teknik Kendaraan Ringan)</option>
                         </select>
                     </div>
                 </div>
@@ -202,20 +220,19 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Data Siswa Awal (Default)
+        // Data Siswa Contoh Berdasarkan Jurusan
         let defaultStudents = [
-            { id: 1, nisn: '0051234501', name: 'Ahmad Fauzi', class: '10-A' },
-            { id: 2, nisn: '0051234502', name: 'Anisa Rahmawati', class: '10-A' },
-            { id: 3, nisn: '0051234503', name: 'Budi Santoso', class: '10-A' },
-            { id: 4, nisn: '0051234504', name: 'Dina Lestari', class: '10-A' },
-            { id: 5, nisn: '0051234505', name: 'Eko Prasetyo', class: '10-A' },
-            { id: 6, nisn: '0051234506', name: 'Fikri Haikal', class: '10-B' },
-            { id: 7, nisn: '0051234507', name: 'Gita Gutawa', class: '10-B' }
+            { id: 1, nisn: '0051234501', name: 'Ahmad Fauzi', class: 'RPL' },
+            { id: 2, nisn: '0051234502', name: 'Anisa Rahmawati', class: 'RPL' },
+            { id: 3, nisn: '0051234503', name: 'Budi Santoso', class: 'DKV' },
+            { id: 4, nisn: '0051234504', name: 'Dina Lestari', class: 'AKUNTANSI' },
+            { id: 5, nisn: '0051234505', name: 'Eko Prasetyo', class: 'TKR' },
+            { id: 6, nisn: '0051234506', name: 'Fikri Haikal', class: 'TSM' }
         ];
 
-        // Inisialisasi State Aplikasi
-        let students = JSON.parse(localStorage.getItem('siswa_data')) || defaultStudents;
-        let attendanceRecords = JSON.parse(localStorage.getItem('absensi_records')) || {};
+        // Inisialisasi Data dari LocalStorage
+        let students = JSON.parse(localStorage.getItem('siswa_data_smk')) || defaultStudents;
+        let attendanceRecords = JSON.parse(localStorage.getItem('absensi_records_smk')) || {};
 
         // Set Tanggal Hari Ini secara Default
         document.getElementById('attendanceDate').valueAsDate = new Date();
@@ -226,17 +243,17 @@
             const selectedDate = document.getElementById('attendanceDate').value;
             const tableBody = document.getElementById('studentTableBody');
             
-            // Filter siswa berdasarkan kelas
+            // Filter siswa berdasarkan Jurusan
             const filteredStudents = students.filter(s => s.class === selectedClass);
             tableBody.innerHTML = '';
 
             if (filteredStudents.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada siswa di kelas ini</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada siswa di jurusan ini</td></tr>';
                 updateStats();
                 return;
             }
 
-            // Ambil data absensi tersimpan untuk tanggal & kelas ini
+            // Ambil data absensi tersimpan untuk tanggal & jurusan ini
             const recordKey = `${selectedDate}_${selectedClass}`;
             const currentRecord = attendanceRecords[recordKey] || {};
 
@@ -349,10 +366,10 @@
             });
 
             attendanceRecords[recordKey] = recordData;
-            localStorage.setItem('absensi_records', JSON.stringify(attendanceRecords));
-            localStorage.setItem('siswa_data', JSON.stringify(students));
+            localStorage.setItem('absensi_records_smk', JSON.stringify(attendanceRecords));
+            localStorage.setItem('siswa_data_smk', JSON.stringify(students));
 
-            alert(`Absensi Kelas ${selectedClass} untuk tanggal${selectedDate} BERHASIL DISIMPAN!`);
+            alert(`Absensi Jurusan ${selectedClass} untuk tanggal ${selectedDate} BERHASIL DISIMPAN!`);
         }
 
         // Tambah Siswa Baru
@@ -374,7 +391,7 @@
             };
 
             students.push(newStudent);
-            localStorage.setItem('siswa_data', JSON.stringify(students));
+            localStorage.setItem('siswa_data_smk', JSON.stringify(students));
 
             // Reset Input & Tutup Modal
             document.getElementById('newNisn').value = '';
@@ -392,7 +409,7 @@
         function deleteStudent(id) {
             if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
                 students = students.filter(s => s.id !== id);
-                localStorage.setItem('siswa_data', JSON.stringify(students));
+                localStorage.setItem('siswa_data_smk', JSON.stringify(students));
                 loadStudents();
             }
         }
@@ -409,7 +426,7 @@
             }
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "No,NISN,Nama Siswa,Kelas,Tanggal,Status Kehadiran\n";
+            csvContent += "No,NISN,Nama Siswa,Jurusan,Tanggal,Status Kehadiran\n";
 
             filteredStudents.forEach((student, index) => {
                 const checkedStatus = document.querySelector(`input[name="status_${student.id}"]:checked`);
@@ -420,7 +437,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Absensi_Kelas_${selectedClass}_${selectedDate}.csv`);
+            link.setAttribute("download", `Absensi_Jurusan_${selectedClass}_${selectedDate}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
