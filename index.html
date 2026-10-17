@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Siswa Online</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --bg-color: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+        }
+
+        .attendance-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: #ffffff;
+        }
+
+        .status-btn-group .btn-check:checked + .btn-outline-success {
+            background-color: #198754;
+            color: white;
+        }
+        .status-btn-group .btn-check:checked + .btn-outline-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+        .status-btn-group .btn-check:checked + .btn-outline-info {
+            background-color: #0dcaf0;
+            color: black;
+        }
+        .status-btn-group .btn-check:checked + .btn-outline-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .stat-card {
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="#">
+                <i class="fa-solid fa-user-check"></i> Absensi Siswa Online
+            </a>
+            <span class="navbar-text text-white-50">
+                Sistem Kehadiran Digital
+            </span>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container pb-5">
+        
+        <!-- Controls Panel -->
+        <div class="attendance-card p-4 mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Pilih Kelas</label>
+                    <select class="form-select" id="classSelect" onchange="loadStudents()">
+                        <option value="10-A">Kelas X - A</option>
+                        <option value="10-B">Kelas X - B</option>
+                        <option value="11-A">Kelas XI - A</option>
+                        <option value="12-A">Kelas XII - A</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Tanggal Absensi</label>
+                    <input type="date" class="form-control" id="attendanceDate" onchange="loadStudents()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Cari Nama Siswa</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari nama..." onkeyup="filterStudents()">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                        <i class="fa-solid fa-user-plus me-1"></i> Tambah Siswa
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics Grid -->
+        <div class="row g-3 mb-4 text-center">
+            <div class="col-6 col-md-3">
+                <div class="card stat-card bg-success text-white p-3 shadow-sm">
+                    <h6 class="m-0"><i class="fa-solid fa-circle-check me-1"></i> Hadir</h6>
+                    <h3 class="fw-bold my-1" id="countHadir">0</h3>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card bg-warning text-dark p-3 shadow-sm">
+                    <h6 class="m-0"><i class="fa-solid fa-clock me-1"></i> Izin</h6>
+                    <h3 class="fw-bold my-1" id="countIzin">0</h3>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card bg-info text-dark p-3 shadow-sm">
+                    <h6 class="m-0"><i class="fa-solid fa-notes-medical me-1"></i> Sakit</h6>
+                    <h3 class="fw-bold my-1" id="countSakit">0</h3>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card bg-danger text-white p-3 shadow-sm">
+                    <h6 class="m-0"><i class="fa-solid fa-circle-xmark me-1"></i> Alpa</h6>
+                    <h3 class="fw-bold my-1" id="countAlpa">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student List Table -->
+        <div class="attendance-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check me-2"></i>Daftar Kehadiran Siswa</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="markAll('Hadir')">
+                        <i class="fa-solid fa-check-double me-1"></i> Hadir Semua
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="exportCSV()">
+                        <i class="fa-solid fa-file-excel me-1"></i> Ekspor CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>NISN</th>
+                            <th>Nama Lengkap</th>
+                            <th class="text-center">Status Kehadiran</th>
+                            <th class="text-center" style="width: 80px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <!-- Dynamic Student Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-end mt-3">
+                <button class="btn btn-primary btn-lg px-4 fw-bold" onclick="saveAttendance()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Simpan Data Absensi
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Tambah Siswa -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Tambah Siswa Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">NISN</label>
+                        <input type="text" class="form-control" id="newNisn" placeholder="Contoh: 12345678">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="newName" placeholder="Contoh: Ahmad Rizky">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Kelas</label>
+                        <select class="form-select" id="newClass">
+                            <option value="10-A">Kelas X - A</option>
+                            <option value="10-B">Kelas X - B</option>
+                            <option value="11-A">Kelas XI - A</option>
+                            <option value="12-A">Kelas XII - A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="addStudent()">Simpan Siswa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Data Siswa Awal (Default)
+        let defaultStudents = [
+            { id: 1, nisn: '0051234501', name: 'Ahmad Fauzi', class: '10-A' },
+            { id: 2, nisn: '0051234502', name: 'Anisa Rahmawati', class: '10-A' },
+            { id: 3, nisn: '0051234503', name: 'Budi Santoso', class: '10-A' },
+            { id: 4, nisn: '0051234504', name: 'Dina Lestari', class: '10-A' },
+            { id: 5, nisn: '0051234505', name: 'Eko Prasetyo', class: '10-A' },
+            { id: 6, nisn: '0051234506', name: 'Fikri Haikal', class: '10-B' },
+            { id: 7, nisn: '0051234507', name: 'Gita Gutawa', class: '10-B' }
+        ];
+
+        // Inisialisasi State Aplikasi
+        let students = JSON.parse(localStorage.getItem('siswa_data')) || defaultStudents;
+        let attendanceRecords = JSON.parse(localStorage.getItem('absensi_records')) || {};
+
+        // Set Tanggal Hari Ini secara Default
+        document.getElementById('attendanceDate').valueAsDate = new Date();
+
+        // Render Tabel Siswa
+        function loadStudents() {
+            const selectedClass = document.getElementById('classSelect').value;
+            const selectedDate = document.getElementById('attendanceDate').value;
+            const tableBody = document.getElementById('studentTableBody');
+            
+            // Filter siswa berdasarkan kelas
+            const filteredStudents = students.filter(s => s.class === selectedClass);
+            tableBody.innerHTML = '';
+
+            if (filteredStudents.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada siswa di kelas ini</td></tr>';
+                updateStats();
+                return;
+            }
+
+            // Ambil data absensi tersimpan untuk tanggal & kelas ini
+            const recordKey = `${selectedDate}_${selectedClass}`;
+            const currentRecord = attendanceRecords[recordKey] || {};
+
+            filteredStudents.forEach((student, index) => {
+                const status = currentRecord[student.id] || 'Hadir'; // Default: Hadir
+
+                tableBody.innerHTML += `
+                    <tr class="student-row" data-name="${student.name.toLowerCase()}" data-nisn="${student.nisn}">
+                        <td>${index + 1}</td>
+                        <td class="fw-semibold text-secondary">${student.nisn}</td>
+                        <td class="fw-bold">${student.name}</td>
+                        <td class="text-center">
+                            <div class="btn-group status-btn-group" role="group">
+                                <input type="radio" class="btn-check" name="status_${student.id}" id="hadir_${student.id}" value="Hadir" ${status === 'Hadir' ? 'checked' : ''} onchange="updateStats()">
+                                <label class="btn btn-outline-success btn-sm px-3" for="hadir_${student.id}">Hadir</label>
+
+                                <input type="radio" class="btn-check" name="status_${student.id}" id="izin_${student.id}" value="Izin" ${status === 'Izin' ? 'checked' : ''} onchange="updateStats()">
+                                <label class="btn btn-outline-warning btn-sm px-3" for="izin_${student.id}">Izin</label>
+
+                                <input type="radio" class="btn-check" name="status_${student.id}" id="sakit_${student.id}" value="Sakit" ${status === 'Sakit' ? 'checked' : ''} onchange="updateStats()">
+                                <label class="btn btn-outline-info btn-sm px-3" for="sakit_${student.id}">Sakit</label>
+
+                                <input type="radio" class="btn-check" name="status_${student.id}" id="alpa_${student.id}" value="Alpa" ${status === 'Alpa' ? 'checked' : ''} onchange="updateStats()">
+                                <label class="btn btn-outline-danger btn-sm px-3" for="alpa_${student.id}">Alpa</label>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent(${student.id})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            updateStats();
+        }
+
+        // Hitung & Update Statistik Kehadiran
+        function updateStats() {
+            let hadir = 0, izin = 0, sakit = 0, alpa = 0;
+            const selectedClass = document.getElementById('classSelect').value;
+            const filteredStudents = students.filter(s => s.class === selectedClass);
+
+            filteredStudents.forEach(student => {
+                const checkedStatus = document.querySelector(`input[name="status_${student.id}"]:checked`);
+                if (checkedStatus) {
+                    const val = checkedStatus.value;
+                    if (val === 'Hadir') hadir++;
+                    else if (val === 'Izin') izin++;
+                    else if (val === 'Sakit') sakit++;
+                    else if (val === 'Alpa') alpa++;
+                }
+            });
+
+            document.getElementById('countHadir').innerText = hadir;
+            document.getElementById('countIzin').innerText = izin;
+            document.getElementById('countSakit').innerText = sakit;
+            document.getElementById('countAlpa').innerText = alpa;
+        }
+
+        // Tandai Semua Siswa Sebagai Hadir
+        function markAll(status) {
+            const selectedClass = document.getElementById('classSelect').value;
+            const filteredStudents = students.filter(s => s.class === selectedClass);
+
+            filteredStudents.forEach(student => {
+                const targetRadio = document.getElementById(`${status.toLowerCase()}_${student.id}`);
+                if (targetRadio) targetRadio.checked = true;
+            });
+
+            updateStats();
+        }
+
+        // Filter Pencarian Siswa
+        function filterStudents() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('.student-row');
+
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name');
+                const nisn = row.getAttribute('data-nisn');
+                if (name.includes(query) || nisn.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Simpan Absensi ke LocalStorage
+        function saveAttendance() {
+            const selectedClass = document.getElementById('classSelect').value;
+            const selectedDate = document.getElementById('attendanceDate').value;
+
+            if (!selectedDate) {
+                alert('Silakan pilih tanggal absensi terlebih dahulu!');
+                return;
+            }
+
+            const recordKey = `${selectedDate}_${selectedClass}`;
+            const filteredStudents = students.filter(s => s.class === selectedClass);
+            const recordData = {};
+
+            filteredStudents.forEach(student => {
+                const checkedStatus = document.querySelector(`input[name="status_${student.id}"]:checked`);
+                if (checkedStatus) {
+                    recordData[student.id] = checkedStatus.value;
+                }
+            });
+
+            attendanceRecords[recordKey] = recordData;
+            localStorage.setItem('absensi_records', JSON.stringify(attendanceRecords));
+            localStorage.setItem('siswa_data', JSON.stringify(students));
+
+            alert(`Absensi Kelas ${selectedClass} untuk tanggal${selectedDate} BERHASIL DISIMPAN!`);
+        }
+
+        // Tambah Siswa Baru
+        function addStudent() {
+            const nisn = document.getElementById('newNisn').value.trim();
+            const name = document.getElementById('newName').value.trim();
+            const studentClass = document.getElementById('newClass').value;
+
+            if (!nisn || !name) {
+                alert('Mohon isi NISN dan Nama Lengkap siswa!');
+                return;
+            }
+
+            const newStudent = {
+                id: Date.now(),
+                nisn: nisn,
+                name: name,
+                class: studentClass
+            };
+
+            students.push(newStudent);
+            localStorage.setItem('siswa_data', JSON.stringify(students));
+
+            // Reset Input & Tutup Modal
+            document.getElementById('newNisn').value = '';
+            document.getElementById('newName').value = '';
+            
+            const modalEl = document.getElementById('addStudentModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            document.getElementById('classSelect').value = studentClass;
+            loadStudents();
+        }
+
+        // Hapus Siswa
+        function deleteStudent(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
+                students = students.filter(s => s.id !== id);
+                localStorage.setItem('siswa_data', JSON.stringify(students));
+                loadStudents();
+            }
+        }
+
+        // Ekspor Laporan ke CSV (Excel)
+        function exportCSV() {
+            const selectedClass = document.getElementById('classSelect').value;
+            const selectedDate = document.getElementById('attendanceDate').value;
+            const filteredStudents = students.filter(s => s.class === selectedClass);
+
+            if (filteredStudents.length === 0) {
+                alert('Tidak ada data siswa untuk diekspor!');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "No,NISN,Nama Siswa,Kelas,Tanggal,Status Kehadiran\n";
+
+            filteredStudents.forEach((student, index) => {
+                const checkedStatus = document.querySelector(`input[name="status_${student.id}"]:checked`);
+                const status = checkedStatus ? checkedStatus.value : 'Belum Absen';
+                csvContent += `${index + 1},"${student.nisn}","${student.name}","${selectedClass}","${selectedDate}","${status}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Absensi_Kelas_${selectedClass}_${selectedDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Inisialisasi Tampilan
+        loadStudents();
+    </script>
+</body>
+</html>
